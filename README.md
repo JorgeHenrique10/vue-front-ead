@@ -1,6 +1,6 @@
 # vue-front-ead
 
-## Project setup
+## Vue3.js Plataforma Ead 
 ```
 npm install
 ```
