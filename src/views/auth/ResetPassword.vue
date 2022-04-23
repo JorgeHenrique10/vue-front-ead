@@ -62,24 +62,26 @@
                   required
                 />
               </div>
-
+              <div class="groupForm">
+                <i class="far fa-key"></i>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Senha"
+                  v-model="password"
+                  required
+                />
+                <i class="far fa-eye buttom"></i>
+              </div>
               <button
                 :class="['btn', 'primary', loading ? 'loading' : '']"
                 type="submit"
-                @click.prevent="forgotPassword"
+                @click.prevent="reset"
               >
-                <span v-if="loading">Enviando E-mail...</span>
-                <span v-else>Recuperar Senha</span>
+                <span v-if="loading">Alterando a Senha...</span>
+                <span v-else>Mudar Senha</span>
               </button>
             </form>
-            <span>
-              <p class="fontSmall">
-                Acessar?
-                <router-link :to="{ name: 'auth' }" class="link primary"
-                  >Clique aqui</router-link
-                >
-              </p>
-            </span>
           </div>
           <span class="copyright fontSmall">
             Todos os Direitos reservados - <b>Especializati</b>
@@ -91,39 +93,55 @@
 </template>
 
 <script>
-import { ref } from "@vue/reactivity";
+import router from "@/router";
 import { useStore } from "vuex";
+import { ref } from "@vue/reactivity";
 import { notify } from "@kyvg/vue3-notification";
 export default {
-  setup() {
+  props: {
+    token: {
+      require: true,
+    },
+  },
+  setup(props) {
     const store = useStore();
-    const email = ref("");
     const loading = ref(false);
-    const forgotPassword = () => {
+    const email = ref("");
+    const password = ref("");
+
+    const reset = () => {
       loading.value = true;
       store
-        .dispatch("forgotPassword", { email: email.value })
+        .dispatch("reset", {
+          email: email.value,
+          password: password.value,
+          token: props.token,
+        })
         .then(() => {
+          router.push({ name: "auth" });
           notify({
-            title: "E-mail enviado.",
-            text: "Um e-mail para redefinição de senha foi enviado.",
+            title: "Senha alterada",
+            text: "Sua senha foi modificada com sucesso!",
             type: "success",
           });
         })
         .catch(() => {
           notify({
             title: "Falhou ao gerar senha",
-            text: "Falha ao enviar email para gerar nova senha.",
+            text: "Falha ao tentar gerar nova senha.",
             type: "error",
           });
         })
-        .finally(() => (loading.value = false));
+        .finally(() => {
+          loading.value = false;
+        });
     };
 
     return {
-      email,
+      reset,
       loading,
-      forgotPassword,
+      email,
+      password,
     };
   },
 };

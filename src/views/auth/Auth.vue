@@ -54,7 +54,13 @@
             <form action="/dist/index.html" method="">
               <div class="groupForm">
                 <i class="far fa-envelope"></i>
-                <input type="email" name="email" placeholder="Email" required />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="E-mail"
+                  v-model="email"
+                  required
+                />
               </div>
               <div class="groupForm">
                 <i class="far fa-key"></i>
@@ -62,12 +68,18 @@
                   type="password"
                   name="password"
                   placeholder="Senha"
+                  v-model="password"
                   required
                 />
                 <i class="far fa-eye buttom"></i>
               </div>
-              <button class="btn primary" type="submit" @click.prevent="auth">
-                Login
+              <button
+                :class="['btn', 'primary', loading ? 'loading' : '']"
+                type="submit"
+                @click.prevent="auth"
+              >
+                <span v-if="loading">Enviando...</span>
+                <span v-else>Login</span>
               </button>
             </form>
             <span>
@@ -93,22 +105,52 @@
 <script>
 import router from "@/router";
 import { useStore } from "vuex";
+import { ref } from "@vue/reactivity";
+import { notify } from "@kyvg/vue3-notification";
+
 export default {
   setup() {
-    const login = () => router.push({ name: "campus.home" });
-
     const store = useStore();
+    const loading = ref(false);
+    const email = ref("");
+    const password = ref("");
 
     const auth = () => {
-      store.dispatch("auth", {
-        email: "abc@abc.com",
-        password: "password",
-        device_name: "teste",
-      });
+      loading.value = true;
+      store
+        .dispatch("auth", {
+          email: email.value,
+          password: password.value,
+          device_name: "vue3",
+        })
+        .then((response) => {
+          console.log(response);
+          router.push({ name: "campus.home" });
+        })
+        .catch((error) => {
+          let msgError = "Falha na reqiosição";
+
+          if (error.status == 404) msgError = "Usuário não encontrado.";
+          if (error.status == 402) msgError = "Email ou Senha Inválidos.";
+
+          notify({
+            title: "Falha ao autenticar",
+            text: msgError,
+            type: "error",
+          });
+
+          alert("error");
+        })
+        .finally(() => {
+          loading.value = false;
+        });
     };
+
     return {
-      login,
       auth,
+      loading,
+      email,
+      password,
     };
   },
 };
