@@ -3,19 +3,17 @@
     <span :class="['card', 'bg-' + bgName]">
       <span class="icon">
         <img
-          :src="image ? image : require('@/assets/images/icons/default.png')"
-          :alt="title"
+          :src="
+            course.image
+              ? course.image
+              : require('@/assets/images/icons/default.png')
+          "
+          :alt="course.name"
         />
       </span>
-      <span class="title">{{ title }}</span>
+      <span class="title">{{ course.name }}</span>
       <span class="action">
-        <router-link
-          :to="{
-            name: 'campus.modules',
-          }"
-          :class="['btn', bgName]"
-          >Acessar
-        </router-link>
+        <a href="#" :class="['btn', bgName]" @click="setCourse">Acessar</a>
       </span>
     </span>
     <span class="dots">
@@ -27,9 +25,24 @@
 </template>
 
 <script>
+import { useStore } from "vuex";
+import router from "@/router";
+
 export default {
   name: "CardCourse",
-  props: ["title", "image", "bgName"],
+  props: ["course", "bgName"],
+  setup(props) {
+    const store = useStore();
+
+    const setCourse = () => {
+      store.commit("SET_COURSE_SELECTED", props.course);
+      router.push({ name: "campus.modules" });
+    };
+
+    return {
+      setCourse,
+    };
+  },
 };
 </script>
 
